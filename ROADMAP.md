@@ -9,6 +9,23 @@ A Next.js application for note-taking and organization.
 ### Phase 1: Core Canvas Features
 
 - [ ] Canvas component setup
+- [x] Add text boxes
+- [ ] Add image support
+- [x] lets create a canvas element
+- [x] lets create a canvas element the user can write text on
+- [x] lets create a canvas element the user can move text on
+- [x] lets create bounding boxes for the canvas element
+- [x] lets make sure the text renders nicely
+- [ ] lets add in the ability to bold, italisze, and underline text
+- [ ] lets add in the ability to highlight text
+- [ ] lets add in the ability to
+- [ ] insert code / latex / quotes / stuff like that
+- [ ] add labels to imgs? or idk? somehow?
+- [ ] Add snap to grid
+- [ ] Add text formatting options (bold, italic, underline)
+- [ ] Add bullet points and lists
+- [ ] Add highlighting and colored text
+- [ ] Add easy way to navigate between notes
 - [ ] Draggable note cards
 - [ ] Canvas zoom and pan functionality
 - [ ] Note positioning and movement
