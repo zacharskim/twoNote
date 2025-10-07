@@ -3,6 +3,16 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --canvas-bg: #f9fafb;
+  --canvas-text: #1f2937;
+  --canvas-placeholder: #9ca3af;
+  --canvas-box-bg: #ffffff;
+  --canvas-box-border: #e5e7eb;
+  --canvas-box-border-selected: #3b82f6;
+  --canvas-cursor: #1f3720ff;
+  --canvas-help-bg: rgba(255, 255, 255, 0.8);
+  --canvas-help-text: #6b7280;
+  --page-bg: #f3f4f6;
 }
 
 @theme inline {
@@ -12,11 +22,19 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --canvas-bg: #1a1a1a;
+  --canvas-text: #e5e7eb;
+  --canvas-placeholder: #6b7280;
+  --canvas-box-bg: #262626;
+  --canvas-box-border: #404040;
+  --canvas-box-border-selected: #60a5fa;
+  --canvas-cursor: #86efac;
+  --canvas-help-bg: rgba(38, 38, 38, 0.9);
+  --canvas-help-text: #9ca3af;
+  --page-bg: #0f0f0f;
 }
 
 body {

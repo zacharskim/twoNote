@@ -1,5 +1,5 @@
-import Canvas from '@/components/Canvas';
+import PixiCanvas from '@/components/PixiCanvas';
 
 export default function Home() {
-  return <Canvas />;
+  return <PixiCanvas />;
 }
