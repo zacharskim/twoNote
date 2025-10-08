@@ -16,6 +16,13 @@ export interface CanvasStore {
   editingId: string | null;
   cursorPosition: number;
 
+  // Mouse state
+  mouseX: number;
+  mouseY: number;
+
+  // Text content (for canvas-based text editing)
+  textContent: string;
+
   // Drag state
   isDragging: boolean;
   dragOffsetX: number;
@@ -32,6 +39,14 @@ export interface CanvasStore {
   startEditing: (id: string) => void;
   stopEditing: () => void;
 
+  // Actions - Mouse
+  setMousePosition: (x: number, y: number) => void;
+
+  // Actions - Text
+  appendText: (char: string) => void;
+  deleteLastChar: () => void;
+  clearText: () => void;
+
   // Actions - Drag
   startDragging: (offsetX: number, offsetY: number) => void;
   stopDragging: () => void;
@@ -43,6 +58,9 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   selectedId: null,
   editingId: null,
   cursorPosition: 0,
+  mouseX: 0,
+  mouseY: 0,
+  textContent: "",
   isDragging: false,
   dragOffsetX: 0,
   dragOffsetY: 0,
@@ -94,6 +112,26 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   stopEditing: () => {
     set({ editingId: null });
+  },
+
+  // Mouse actions
+  setMousePosition: (x: number, y: number) => {
+    set({ mouseX: x, mouseY: y });
+  },
+
+  // Text actions
+  appendText: (char: string) => {
+    set((state) => ({ textContent: state.textContent + char }));
+  },
+
+  deleteLastChar: () => {
+    set((state) => ({
+      textContent: state.textContent.slice(0, -1)
+    }));
+  },
+
+  clearText: () => {
+    set({ textContent: "" });
   },
 
   // Drag actions
