@@ -9,7 +9,7 @@ import {
   createTextBoxContainer,
   updateContainerPosition,
   updateContainerContent,
-  updateContainerSelection,
+  updateContainerSelection
 } from "@/canvas/rendering/textRenderer";
 
 export default function PixiCanvas() {
@@ -32,7 +32,7 @@ export default function PixiCanvas() {
     selectTextBox,
     stopEditing,
     startDragging,
-    stopDragging,
+    stopDragging
   } = useCanvasStore();
 
   // Initialize PixiJS app
@@ -52,7 +52,7 @@ export default function PixiCanvas() {
         backgroundColor: 0x1a1a1a,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
-        autoDensity: true,
+        autoDensity: true
       });
 
       appRef.current = app;
@@ -114,7 +114,7 @@ export default function PixiCanvas() {
         containerMap.set(textBox.id, container);
       }
     });
-  }, [textBoxes, selectedId, selectTextBox, startDragging]);
+  }, [textBoxes, selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Event handlers
   const handleCanvasClick = useCallback(
@@ -132,7 +132,7 @@ export default function PixiCanvas() {
         addNewTextBox(x - 150, y - 50);
       }
     },
-    [textBoxes, addNewTextBox]
+    [textBoxes] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleMouseMove = useCallback(
@@ -149,34 +149,37 @@ export default function PixiCanvas() {
 
       moveTextBoxTo(selectedId, newPos.x, newPos.y);
     },
-    [isDragging, selectedId, dragOffsetX, dragOffsetY, moveTextBoxTo]
+    [isDragging, selectedId, dragOffsetX, dragOffsetY] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      if (!editingId) return;
+  // Global keyboard handler for canvas text editing
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // TODO: Implement canvas-based text editing
+      // Handle character input, backspace, delete, arrow keys, etc.
 
       if (event.key === "Escape") {
-        stopEditing();
-      } else if (event.key === "Delete" || event.key === "Backspace") {
-        if (event.currentTarget.value === "") {
-          event.preventDefault();
-          deleteTextBox(editingId);
+        if (editingId) {
+          stopEditing();
+        } else if (selectedId) {
+          selectTextBox(null);
         }
+      } else if (event.key === "Delete" || event.key === "Backspace") {
+        if (selectedId && !editingId) {
+          deleteTextBox(selectedId);
+        } else if (editingId) {
+          // TODO: Handle backspace/delete during editing
+          // Remove character at cursor position
+        }
+      } else if (editingId && event.key.length === 1) {
+        // TODO: Insert character at cursor position
+        // Handle printable characters during editing
       }
-    },
-    [editingId, stopEditing, deleteTextBox]
-  );
+    };
 
-  const handleTextChange = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      if (!editingId) return;
-      updateTextBox(editingId, event.target.value);
-    },
-    [editingId, updateTextBox]
-  );
-
-  const currentlyEditing = editingId ? findTextBoxById(textBoxes, editingId) : null;
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [editingId, selectedId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="w-full h-screen flex flex-col items-center bg-gray-900 pt-8 gap-4">
@@ -186,7 +189,7 @@ export default function PixiCanvas() {
           className="text-gray-100 mb-2"
           style={{
             fontFamily: '"Fira Code", "Fira Mono", Menlo, Consolas, monospace',
-            fontSize: "16px",
+            fontSize: "16px"
           }}
         >
           DOM Text: The quick brown fox jumps over the lazy dog
@@ -205,24 +208,8 @@ export default function PixiCanvas() {
           onMouseLeave={stopDragging}
         />
 
-        {/* Floating input for editing */}
-        {currentlyEditing && (
-          <input
-            type="text"
-            autoFocus
-            className="absolute bg-transparent text-white outline-none font-mono z-20"
-            style={{
-              left: currentlyEditing.x + 10,
-              top: currentlyEditing.y + 10,
-              width: currentlyEditing.width - 20,
-              fontSize: "16px",
-            }}
-            value={currentlyEditing.content}
-            onChange={handleTextChange}
-            onKeyDown={handleKeyDown}
-            onBlur={stopEditing}
-          />
-        )}
+        {/* TODO: Canvas-based cursor rendering */}
+        {/* When editingId is set, render a blinking cursor in the PixiJS canvas */}
 
         {/* Help text */}
         <div className="absolute bottom-4 left-4 bg-gray-800 border border-gray-700 rounded p-3 text-sm text-gray-400">

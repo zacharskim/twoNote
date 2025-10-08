@@ -6,7 +6,7 @@ import {
   replaceTextBox,
   removeTextBox,
   moveTextBox,
-  updateTextBoxContent,
+  updateTextBoxContent
 } from "@/canvas/entities/textBox";
 
 export interface CanvasStore {
@@ -53,7 +53,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     set((state) => ({
       textBoxes: addTextBox(state.textBoxes, newBox),
       selectedId: newBox.id,
-      editingId: newBox.id,
+      editingId: newBox.id
     }));
   },
 
@@ -79,7 +79,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     set((state) => ({
       textBoxes: removeTextBox(state.textBoxes, id),
       selectedId: null,
-      editingId: null,
+      editingId: null
     }));
   },
 
@@ -103,5 +103,5 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   stopDragging: () => {
     set({ isDragging: false, dragOffsetX: 0, dragOffsetY: 0 });
-  },
+  }
 }));
