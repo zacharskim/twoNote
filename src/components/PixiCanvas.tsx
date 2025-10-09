@@ -10,8 +10,9 @@ import {
   updateCaretBlink,
   resetCaretBlink,
   renderCaret,
-  type CaretState,
+  type CaretState
 } from "@/canvas/rendering/caretRenderer";
+// import { renderSelection } from "@/canvas/rendering/selectionRenderer";
 // import { findTextBoxById } from "@/canvas/entities/textBox";
 // import { findBoxAtPoint, calculateOffset, calculateNewPosition } from "@/canvas/geometry/hitDetection";
 // import {
@@ -31,6 +32,7 @@ export default function PixiCanvas() {
   const [caretState, setCaretState] = useState<CaretState>(createCaretState());
   const caretGraphicsRef = useRef<Graphics | null>(null);
   const caretChildIndexRef = useRef<number | undefined>(undefined);
+  // const selectionChildIndexRef = useRef<number | undefined>(undefined);
 
   // Zustand store
   const {
@@ -58,6 +60,7 @@ export default function PixiCanvas() {
     moveCursorLeft,
     moveCursorRight,
     setCursorPosition,
+    selection
   } = useCanvasStore();
 
   // Initialize PixiJS app
@@ -249,6 +252,16 @@ export default function PixiCanvas() {
     // Update text content
     text.text = textContent || "";
 
+    // TODO: Render selection highlight (commented out for now - has bugs)
+    // const newSelectionIndex = renderSelection(
+    //   app.stage,
+    //   text,
+    //   selection,
+    //   textContent,
+    //   selectionChildIndexRef.current
+    // );
+    // selectionChildIndexRef.current = newSelectionIndex;
+
     // Render caret at cursor position
     const newCaretIndex = renderCaret(
       app.stage,
@@ -265,14 +278,16 @@ export default function PixiCanvas() {
   // Keyboard - handle text input and navigation
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      // Handle arrow keys for cursor movement
+      const isShiftHeld = event.shiftKey;
+
+      // Handle arrow keys for cursor movement (with optional selection)
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        moveCursorLeft();
+        moveCursorLeft(isShiftHeld);
         setCaretState((prev) => resetCaretBlink(prev));
       } else if (event.key === "ArrowRight") {
         event.preventDefault();
-        moveCursorRight();
+        moveCursorRight(isShiftHeld);
         setCaretState((prev) => resetCaretBlink(prev));
       }
       // Handle text input
@@ -316,8 +331,15 @@ export default function PixiCanvas() {
         {/* When editingId is set, render a blinking cursor in the PixiJS canvas */}
 
         {/* Help text */}
-        <div className="absolute bottom-4 left-4 bg-gray-800 border border-gray-700 rounded p-3 text-sm text-gray-400">
+        <div className="absolute bottom-4 left-4 bg-gray-800 border border-gray-700 rounded p-3 text-sm text-gray-400 space-y-1">
           <p>Canvas ready for text editing implementation</p>
+          <p className="text-xs">Cursor: {cursorPosition}</p>
+          <p className="text-xs">
+            Selection: {selection.start === selection.end ? "none" : `${selection.start} → ${selection.end}`}
+          </p>
+          <p className="text-xs">
+            Selected text: &ldquo;{textContent.substring(selection.start, selection.end)}&rdquo;
+          </p>
         </div>
       </div>
     </div>

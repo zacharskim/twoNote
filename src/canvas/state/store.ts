@@ -8,6 +8,8 @@ import {
   moveTextBox,
   updateTextBoxContent
 } from "@/canvas/entities/textBox";
+import type { TextSelection } from "@/canvas/input/selection";
+import { createSelection, isSelectionEmpty } from "@/canvas/input/selection";
 
 export interface CanvasStore {
   // State
@@ -15,6 +17,9 @@ export interface CanvasStore {
   selectedId: string | null;
   editingId: string | null;
   cursorPosition: number;
+
+  // Selection state
+  selection: TextSelection;
 
   // Mouse state
   mouseX: number;
@@ -49,8 +54,13 @@ export interface CanvasStore {
 
   // Actions - Cursor
   setCursorPosition: (position: number) => void;
-  moveCursorLeft: () => void;
-  moveCursorRight: () => void;
+  moveCursorLeft: (withSelection?: boolean) => void;
+  moveCursorRight: (withSelection?: boolean) => void;
+
+  // Actions - Selection
+  setSelection: (start: number, end: number) => void;
+  clearSelection: () => void;
+  hasSelection: () => boolean;
 
   // Actions - Drag
   startDragging: (offsetX: number, offsetY: number) => void;
@@ -63,6 +73,7 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   selectedId: null,
   editingId: null,
   cursorPosition: 0,
+  selection: createSelection(),
   mouseX: 0,
   mouseY: 0,
   textContent: "",
@@ -164,15 +175,67 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
     set({ cursorPosition: position });
   },
 
-  moveCursorLeft: () => {
-    set((state) => ({
-      cursorPosition: Math.max(0, state.cursorPosition - 1)
-    }));
+  moveCursorLeft: (withSelection = false) => {
+    set((state) => {
+      const newPosition = Math.max(0, state.cursorPosition - 1);
+
+      if (withSelection) {
+        // Shift is held - extend/modify selection
+        const selection = {
+          ...state.selection,
+          start: state.selection.start === state.selection.end ? state.cursorPosition : state.selection.start,
+          end: newPosition
+        };
+        return { cursorPosition: newPosition, selection };
+      } else {
+        // No shift - clear selection and move cursor
+        return {
+          cursorPosition: newPosition,
+          selection: createSelection()
+        };
+      }
+    });
   },
 
-  moveCursorRight: () => {
-    set((state) => ({
-      cursorPosition: Math.min(state.textContent.length, state.cursorPosition + 1)
-    }));
+  moveCursorRight: (withSelection = false) => {
+    set((state) => {
+      const newPosition = Math.min(state.textContent.length, state.cursorPosition + 1);
+
+      if (withSelection) {
+        // Shift is held - extend/modify selection
+        const selection = {
+          ...state.selection,
+          start: state.selection.start === state.selection.end ? state.cursorPosition : state.selection.start,
+          end: newPosition
+        };
+        return { cursorPosition: newPosition, selection };
+      } else {
+        // No shift - clear selection and move cursor
+        return {
+          cursorPosition: newPosition,
+          selection: createSelection()
+        };
+      }
+    });
+  },
+
+  // Selection actions
+  setSelection: (start: number, end: number) => {
+    set({
+      selection: {
+        start: Math.min(start, end),
+        end: Math.max(start, end),
+        textBoxId: null
+      }
+    });
+  },
+
+  clearSelection: () => {
+    set({ selection: createSelection() });
+  },
+
+  hasSelection: () => {
+    const { selection } = get();
+    return !isSelectionEmpty(selection);
   }
 }));
