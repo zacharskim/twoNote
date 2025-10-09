@@ -53,8 +53,8 @@ export default function PixiCanvas() {
     startDragging,
     stopDragging,
     setMousePosition,
-    appendText,
-    deleteLastChar,
+    insertTextAtCursor,
+    deleteCharBeforeCursor,
     moveCursorLeft,
     moveCursorRight,
     setCursorPosition,
@@ -277,20 +277,20 @@ export default function PixiCanvas() {
       }
       // Handle text input
       else if (event.key === "Enter") {
-        appendText("\n");
+        insertTextAtCursor("\n");
         setCaretState((prev) => resetCaretBlink(prev));
       } else if (isPrintableChar(event.key)) {
-        appendText(event.key);
+        insertTextAtCursor(event.key);
         setCaretState((prev) => resetCaretBlink(prev));
       } else if (isDeleteKey(event.key)) {
-        deleteLastChar();
+        deleteCharBeforeCursor();
         setCaretState((prev) => resetCaretBlink(prev));
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [appendText, deleteLastChar, moveCursorLeft, moveCursorRight]);
+  }, [insertTextAtCursor, deleteCharBeforeCursor, moveCursorLeft, moveCursorRight]);
 
   return (
     <div className="w-full h-screen flex flex-col items-center bg-gray-900 pt-8 gap-4">

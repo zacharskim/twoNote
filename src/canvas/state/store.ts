@@ -43,8 +43,8 @@ export interface CanvasStore {
   setMousePosition: (x: number, y: number) => void;
 
   // Actions - Text
-  appendText: (char: string) => void;
-  deleteLastChar: () => void;
+  insertTextAtCursor: (char: string) => void;
+  deleteCharBeforeCursor: () => void;
   clearText: () => void;
 
   // Actions - Cursor
@@ -125,18 +125,25 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   },
 
   // Text actions
-  appendText: (char: string) => {
+  insertTextAtCursor: (char: string) => {
     set((state) => ({
-      textContent: state.textContent + char,
+      textContent:
+        state.textContent.slice(0, state.cursorPosition) + char + state.textContent.slice(state.cursorPosition),
       cursorPosition: state.cursorPosition + char.length
     }));
   },
 
-  deleteLastChar: () => {
-    set((state) => ({
-      textContent: state.textContent.slice(0, -1),
-      cursorPosition: Math.max(0, state.cursorPosition - 1)
-    }));
+  deleteCharBeforeCursor: () => {
+    set((state) => {
+      // Only delete if cursor is not at the beginning
+      if (state.cursorPosition <= 0) return state;
+
+      return {
+        textContent:
+          state.textContent.slice(0, state.cursorPosition - 1) + state.textContent.slice(state.cursorPosition),
+        cursorPosition: state.cursorPosition - 1
+      };
+    });
   },
 
   clearText: () => {
