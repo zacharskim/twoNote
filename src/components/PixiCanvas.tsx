@@ -60,7 +60,10 @@ export default function PixiCanvas() {
     moveCursorLeft,
     moveCursorRight,
     setCursorPosition,
-    selection
+    selection,
+    copyToClipboard,
+    cutToClipboard,
+    pasteFromClipboard
   } = useCanvasStore();
 
   // Initialize PixiJS app
@@ -273,6 +276,26 @@ export default function PixiCanvas() {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const isShiftHeld = event.shiftKey;
+      const isCmdOrCtrl = event.metaKey || event.ctrlKey;
+
+      // Handle clipboard shortcuts (Cmd/Ctrl + C/X/V)
+      if (isCmdOrCtrl && event.key === "c") {
+        event.preventDefault();
+        copyToClipboard();
+        return;
+      }
+      if (isCmdOrCtrl && event.key === "x") {
+        event.preventDefault();
+        cutToClipboard();
+        setCaretState((prev) => resetCaretBlink(prev));
+        return;
+      }
+      if (isCmdOrCtrl && event.key === "v") {
+        event.preventDefault();
+        pasteFromClipboard();
+        setCaretState((prev) => resetCaretBlink(prev));
+        return;
+      }
 
       // Handle arrow keys for cursor movement (with optional selection)
       if (event.key === "ArrowLeft") {
@@ -299,7 +322,15 @@ export default function PixiCanvas() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [insertTextAtCursor, deleteCharBeforeCursor, moveCursorLeft, moveCursorRight, selection]);
+  }, [
+    insertTextAtCursor,
+    deleteCharBeforeCursor,
+    moveCursorLeft,
+    moveCursorRight,
+    copyToClipboard,
+    cutToClipboard,
+    pasteFromClipboard
+  ]);
 
   return (
     <div className="w-full h-screen flex flex-col items-center bg-gray-900 pt-8 gap-4">
