@@ -8,7 +8,7 @@ export const TEXT_STYLE = new TextStyle({
   fontSize: 16,
   fill: 0xe5e7eb,
   wordWrap: true,
-  wordWrapWidth: 280,
+  wordWrapWidth: 280
 });
 
 export const COLORS = {
@@ -16,7 +16,7 @@ export const COLORS = {
   boxBorder: 0x404040,
   boxBorderSelected: 0x60a5fa,
   text: 0xe5e7eb,
-  cursor: 0x86efac,
+  cursor: 0xe5e7eb
 } as const;
 
 export const BOX_PADDING = 10;
@@ -24,11 +24,7 @@ export const BOX_PADDING = 10;
 /**
  * Creates a Graphics object for a text box background
  */
-export const createBoxBackground = (
-  width: number,
-  height: number,
-  isSelected: boolean
-): Graphics => {
+export const createBoxBackground = (width: number, height: number, isSelected: boolean): Graphics => {
   const bg = new Graphics();
 
   // Fill
@@ -38,7 +34,7 @@ export const createBoxBackground = (
   // Border
   bg.stroke({
     width: 2,
-    color: isSelected ? COLORS.boxBorderSelected : COLORS.boxBorder,
+    color: isSelected ? COLORS.boxBorderSelected : COLORS.boxBorder
   });
 
   return bg;
@@ -50,7 +46,7 @@ export const createBoxBackground = (
 export const createTextObject = (content: string): Text => {
   const text = new Text({
     text: content || "Type here...",
-    style: TEXT_STYLE,
+    style: TEXT_STYLE
   });
 
   text.x = BOX_PADDING;
@@ -62,10 +58,7 @@ export const createTextObject = (content: string): Text => {
 /**
  * Creates a complete text box container
  */
-export const createTextBoxContainer = (
-  textBox: TextBox,
-  isSelected: boolean
-): Container => {
+export const createTextBoxContainer = (textBox: TextBox, isSelected: boolean): Container => {
   const container = new Container();
   container.x = textBox.x;
   container.y = textBox.y;
@@ -91,11 +84,7 @@ export const createTextBoxContainer = (
 /**
  * Updates an existing container's position
  */
-export const updateContainerPosition = (
-  container: Container,
-  x: number,
-  y: number
-): void => {
+export const updateContainerPosition = (container: Container, x: number, y: number): void => {
   container.x = x;
   container.y = y;
 };
@@ -103,10 +92,7 @@ export const updateContainerPosition = (
 /**
  * Updates an existing container's content
  */
-export const updateContainerContent = (
-  container: Container,
-  content: string
-): void => {
+export const updateContainerContent = (container: Container, content: string): void => {
   const textChild = container.children[1] as Text;
   if (textChild) {
     textChild.text = content || "Type here...";
@@ -116,11 +102,7 @@ export const updateContainerContent = (
 /**
  * Updates an existing container's selection state
  */
-export const updateContainerSelection = (
-  container: Container,
-  textBox: TextBox,
-  isSelected: boolean
-): void => {
+export const updateContainerSelection = (container: Container, textBox: TextBox, isSelected: boolean): void => {
   // Remove old background
   container.removeChildAt(0);
 

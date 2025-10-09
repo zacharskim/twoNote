@@ -1,10 +1,17 @@
 "use client";
 
-import { useRef, useEffect } from "react";
-import { Application, Text } from "pixi.js";
+import { useRef, useEffect, useState } from "react";
+import { Application, Text, Graphics } from "pixi.js";
 import { handleMouseMove } from "@/canvas/input/mouse";
 import { isPrintableChar, isDeleteKey } from "@/canvas/input/keyboard";
 import { useCanvasStore } from "@/canvas/state/store";
+import {
+  createCaretState,
+  updateCaretBlink,
+  resetCaretBlink,
+  renderCaret,
+  type CaretState,
+} from "@/canvas/rendering/caretRenderer";
 // import { findTextBoxById } from "@/canvas/entities/textBox";
 // import { findBoxAtPoint, calculateOffset, calculateNewPosition } from "@/canvas/geometry/hitDetection";
 // import {
@@ -20,6 +27,11 @@ export default function PixiCanvas() {
   const textRef = useRef<Text | null>(null);
   // const containerMapRef = useRef<Map<string, Container>>(new Map());
 
+  // Caret state and refs
+  const [caretState, setCaretState] = useState<CaretState>(createCaretState());
+  const caretGraphicsRef = useRef<Graphics | null>(null);
+  const caretChildIndexRef = useRef<number | undefined>(undefined);
+
   // Zustand store
   const {
     textBoxes,
@@ -34,6 +46,7 @@ export default function PixiCanvas() {
     mouseX,
     mouseY,
     textContent,
+    cursorPosition,
     deleteTextBox,
     selectTextBox,
     stopEditing,
@@ -41,7 +54,10 @@ export default function PixiCanvas() {
     stopDragging,
     setMousePosition,
     appendText,
-    deleteLastChar
+    deleteLastChar,
+    moveCursorLeft,
+    moveCursorRight,
+    setCursorPosition,
   } = useCanvasStore();
 
   // Initialize PixiJS app
@@ -215,32 +231,66 @@ export default function PixiCanvas() {
     return () => canvas.removeEventListener("dblclick", onDoubleClick);
   }, []);
 
-  // Render text at mouse position
+  // Caret blinking animation
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCaretState((prev) => updateCaretBlink(prev, Date.now()));
+    }, 100); // Check every 100ms
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Render text and caret
   useEffect(() => {
     const text = textRef.current;
-    if (!text) return;
+    const app = appRef.current;
+    if (!text || !app) return;
 
-    text.text = textContent;
-    // text.x = mouseX;
-    // text.y = mouseY;
-  }, [textContent]);
+    // Update text content
+    text.text = textContent || "";
+
+    // Render caret at cursor position
+    const newCaretIndex = renderCaret(
+      app.stage,
+      text,
+      cursorPosition,
+      textContent,
+      caretState,
+      caretChildIndexRef.current
+    );
+
+    caretChildIndexRef.current = newCaretIndex;
+  }, [textContent, cursorPosition, caretState]);
 
   // Keyboard - handle text input and navigation
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Enter") {
+      // Handle arrow keys for cursor movement
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveCursorLeft();
+        setCaretState((prev) => resetCaretBlink(prev));
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveCursorRight();
+        setCaretState((prev) => resetCaretBlink(prev));
+      }
+      // Handle text input
+      else if (event.key === "Enter") {
         appendText("\n");
+        setCaretState((prev) => resetCaretBlink(prev));
       } else if (isPrintableChar(event.key)) {
         appendText(event.key);
+        setCaretState((prev) => resetCaretBlink(prev));
       } else if (isDeleteKey(event.key)) {
         deleteLastChar();
+        setCaretState((prev) => resetCaretBlink(prev));
       }
-      // TODO: Handle arrow keys, etc.
     };
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [appendText, deleteLastChar]);
+  }, [appendText, deleteLastChar, moveCursorLeft, moveCursorRight]);
 
   return (
     <div className="w-full h-screen flex flex-col items-center bg-gray-900 pt-8 gap-4">

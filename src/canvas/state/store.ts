@@ -47,6 +47,11 @@ export interface CanvasStore {
   deleteLastChar: () => void;
   clearText: () => void;
 
+  // Actions - Cursor
+  setCursorPosition: (position: number) => void;
+  moveCursorLeft: () => void;
+  moveCursorRight: () => void;
+
   // Actions - Drag
   startDragging: (offsetX: number, offsetY: number) => void;
   stopDragging: () => void;
@@ -121,12 +126,16 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   // Text actions
   appendText: (char: string) => {
-    set((state) => ({ textContent: state.textContent + char }));
+    set((state) => ({
+      textContent: state.textContent + char,
+      cursorPosition: state.cursorPosition + char.length
+    }));
   },
 
   deleteLastChar: () => {
     set((state) => ({
-      textContent: state.textContent.slice(0, -1)
+      textContent: state.textContent.slice(0, -1),
+      cursorPosition: Math.max(0, state.cursorPosition - 1)
     }));
   },
 
@@ -141,5 +150,22 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
 
   stopDragging: () => {
     set({ isDragging: false, dragOffsetX: 0, dragOffsetY: 0 });
+  },
+
+  // Cursor actions
+  setCursorPosition: (position: number) => {
+    set({ cursorPosition: position });
+  },
+
+  moveCursorLeft: () => {
+    set((state) => ({
+      cursorPosition: Math.max(0, state.cursorPosition - 1)
+    }));
+  },
+
+  moveCursorRight: () => {
+    set((state) => ({
+      cursorPosition: Math.min(state.textContent.length, state.cursorPosition + 1)
+    }));
   }
 }));
