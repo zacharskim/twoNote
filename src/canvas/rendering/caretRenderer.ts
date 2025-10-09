@@ -103,7 +103,7 @@ export const calculateCaretPosition = (
 
   // Position relative to the text object (which starts at text.x, text.y)
   const x = text.x + textWidth;
-  const y = text.y + (currentLineIndex * lineHeight) - caretPadding;
+  const y = text.y + currentLineIndex * lineHeight - caretPadding;
 
   // Clean up
   tempText.destroy();
@@ -141,14 +141,17 @@ export const updateCaretInContainer = (
   visible: boolean,
   caretChildIndex?: number
 ): number => {
-  // Remove old caret if exists
-  if (caretChildIndex !== undefined && container.children[caretChildIndex]) {
-    container.removeChildAt(caretChildIndex);
+  // Remove old caret if exists - find it by label
+  const existingCaret = container.children.find((child) => child.label === "caret");
+  if (existingCaret) {
+    container.removeChild(existingCaret);
+    existingCaret.destroy();
   }
 
   // Add new caret
   const caret = createCaretGraphics(x, y, height, visible);
-  const index = container.addChild(caret);
+  caret.label = "caret"; // Label it so we can find it later
+  container.addChild(caret);
 
   return container.children.indexOf(caret);
 };
@@ -166,6 +169,5 @@ export const renderCaret = (
   caretChildIndex?: number
 ): number => {
   const { x, y, height } = calculateCaretPosition(text, cursorPosition, content);
-  console.log("hello", x, y, height);
   return updateCaretInContainer(container, x, y, height, caretState.visible, caretChildIndex);
 };

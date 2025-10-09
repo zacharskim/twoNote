@@ -12,7 +12,7 @@ import {
   renderCaret,
   type CaretState
 } from "@/canvas/rendering/caretRenderer";
-// import { renderSelection } from "@/canvas/rendering/selectionRenderer";
+import { renderSelection } from "@/canvas/rendering/selectionRenderer";
 // import { findTextBoxById } from "@/canvas/entities/textBox";
 // import { findBoxAtPoint, calculateOffset, calculateNewPosition } from "@/canvas/geometry/hitDetection";
 // import {
@@ -32,7 +32,7 @@ export default function PixiCanvas() {
   const [caretState, setCaretState] = useState<CaretState>(createCaretState());
   const caretGraphicsRef = useRef<Graphics | null>(null);
   const caretChildIndexRef = useRef<number | undefined>(undefined);
-  // const selectionChildIndexRef = useRef<number | undefined>(undefined);
+  const selectionChildIndexRef = useRef<number | undefined>(undefined);
 
   // Zustand store
   const {
@@ -243,7 +243,7 @@ export default function PixiCanvas() {
     return () => clearInterval(interval);
   }, []);
 
-  // Render text and caret
+  // Render text, selection, and caret
   useEffect(() => {
     const text = textRef.current;
     const app = appRef.current;
@@ -252,15 +252,9 @@ export default function PixiCanvas() {
     // Update text content
     text.text = textContent || "";
 
-    // TODO: Render selection highlight (commented out for now - has bugs)
-    // const newSelectionIndex = renderSelection(
-    //   app.stage,
-    //   text,
-    //   selection,
-    //   textContent,
-    //   selectionChildIndexRef.current
-    // );
-    // selectionChildIndexRef.current = newSelectionIndex;
+    // Render selection highlight (single-line only)
+    const newSelectionIndex = renderSelection(app.stage, text, selection, textContent, selectionChildIndexRef.current);
+    selectionChildIndexRef.current = newSelectionIndex;
 
     // Render caret at cursor position
     const newCaretIndex = renderCaret(
@@ -273,7 +267,7 @@ export default function PixiCanvas() {
     );
 
     caretChildIndexRef.current = newCaretIndex;
-  }, [textContent, cursorPosition, caretState]);
+  }, [textContent, cursorPosition, caretState, selection]);
 
   // Keyboard - handle text input and navigation
   useEffect(() => {
@@ -305,7 +299,7 @@ export default function PixiCanvas() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [insertTextAtCursor, deleteCharBeforeCursor, moveCursorLeft, moveCursorRight]);
+  }, [insertTextAtCursor, deleteCharBeforeCursor, moveCursorLeft, moveCursorRight, selection]);
 
   return (
     <div className="w-full h-screen flex flex-col items-center bg-gray-900 pt-8 gap-4">
