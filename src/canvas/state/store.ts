@@ -61,6 +61,7 @@ export interface CanvasStore {
   setSelection: (start: number, end: number) => void;
   clearSelection: () => void;
   hasSelection: () => boolean;
+  selectAll: () => void;
 
   // Actions - Clipboard
   copyToClipboard: () => Promise<void>;
@@ -269,6 +270,18 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
   hasSelection: () => {
     const { selection } = get();
     return !isSelectionEmpty(selection);
+  },
+
+  selectAll: () => {
+    const { textContent } = get();
+    set({
+      selection: {
+        start: 0,
+        end: textContent.length,
+        textBoxId: null
+      },
+      cursorPosition: textContent.length
+    });
   },
 
   // Clipboard actions

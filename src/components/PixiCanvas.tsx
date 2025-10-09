@@ -63,7 +63,8 @@ export default function PixiCanvas() {
     selection,
     copyToClipboard,
     cutToClipboard,
-    pasteFromClipboard
+    pasteFromClipboard,
+    selectAll
   } = useCanvasStore();
 
   // Initialize PixiJS app
@@ -278,7 +279,7 @@ export default function PixiCanvas() {
       const isShiftHeld = event.shiftKey;
       const isCmdOrCtrl = event.metaKey || event.ctrlKey;
 
-      // Handle clipboard shortcuts (Cmd/Ctrl + C/X/V)
+      // Handle clipboard shortcuts (Cmd/Ctrl + C/X/V/A)
       if (isCmdOrCtrl && event.key === "c") {
         event.preventDefault();
         copyToClipboard();
@@ -293,6 +294,12 @@ export default function PixiCanvas() {
       if (isCmdOrCtrl && event.key === "v") {
         event.preventDefault();
         pasteFromClipboard();
+        setCaretState((prev) => resetCaretBlink(prev));
+        return;
+      }
+      if (isCmdOrCtrl && event.key === "a") {
+        event.preventDefault();
+        selectAll();
         setCaretState((prev) => resetCaretBlink(prev));
         return;
       }
@@ -329,7 +336,8 @@ export default function PixiCanvas() {
     moveCursorRight,
     copyToClipboard,
     cutToClipboard,
-    pasteFromClipboard
+    pasteFromClipboard,
+    selectAll
   ]);
 
   return (
