@@ -13,6 +13,7 @@ import {
   type CaretState
 } from "@/canvas/rendering/caretRenderer";
 import { renderSelection } from "@/canvas/rendering/selectionRenderer";
+import { getCursorPositionFromPoint } from "@/canvas/input/cursorPositioning";
 // import { findTextBoxById } from "@/canvas/entities/textBox";
 // import { findBoxAtPoint, calculateOffset, calculateNewPosition } from "@/canvas/geometry/hitDetection";
 // import {
@@ -64,7 +65,9 @@ export default function PixiCanvas() {
     copyToClipboard,
     cutToClipboard,
     pasteFromClipboard,
-    selectAll
+    selectAll,
+    clearSelection,
+    selectWordAtPosition
   } = useCanvasStore();
 
   // Initialize PixiJS app
@@ -201,13 +204,21 @@ export default function PixiCanvas() {
 
     const onMouseDown = (event: MouseEvent) => {
       const { x, y } = handleMouseMove(event, canvas);
-      console.log("Mouse down at:", x, y);
-      // TODO: Handle text cursor placement, selection start, etc.
+      const text = textRef.current;
+      if (!text) return;
+
+      // Calculate cursor position from click
+      const newCursorPosition = getCursorPositionFromPoint(text, x, y, textContent);
+
+      // Set cursor position and clear selection
+      setCursorPosition(newCursorPosition);
+      clearSelection();
+      setCaretState((prev) => resetCaretBlink(prev));
     };
 
     canvas.addEventListener("mousedown", onMouseDown);
     return () => canvas.removeEventListener("mousedown", onMouseDown);
-  }, []);
+  }, [textContent, setCursorPosition, clearSelection]);
 
   // Mouse up - handle drag end, selection end
   useEffect(() => {
@@ -230,13 +241,20 @@ export default function PixiCanvas() {
 
     const onDoubleClick = (event: MouseEvent) => {
       const { x, y } = handleMouseMove(event, canvas);
-      console.log("Double click at:", x, y);
-      // TODO: Select word at position
+      const text = textRef.current;
+      if (!text) return;
+
+      // Calculate cursor position from click
+      const clickPosition = getCursorPositionFromPoint(text, x, y, textContent);
+
+      // Select word at that position
+      selectWordAtPosition(clickPosition);
+      setCaretState((prev) => resetCaretBlink(prev));
     };
 
     canvas.addEventListener("dblclick", onDoubleClick);
     return () => canvas.removeEventListener("dblclick", onDoubleClick);
-  }, []);
+  }, [textContent, selectWordAtPosition]);
 
   // Caret blinking animation
   useEffect(() => {

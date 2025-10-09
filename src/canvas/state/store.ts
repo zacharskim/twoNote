@@ -9,7 +9,7 @@ import {
   updateTextBoxContent
 } from "@/canvas/entities/textBox";
 import type { TextSelection } from "@/canvas/input/selection";
-import { createSelection, isSelectionEmpty } from "@/canvas/input/selection";
+import { createSelection, isSelectionEmpty, selectWordAt } from "@/canvas/input/selection";
 
 export interface CanvasStore {
   // State
@@ -62,6 +62,7 @@ export interface CanvasStore {
   clearSelection: () => void;
   hasSelection: () => boolean;
   selectAll: () => void;
+  selectWordAtPosition: (position: number) => void;
 
   // Actions - Clipboard
   copyToClipboard: () => Promise<void>;
@@ -281,6 +282,15 @@ export const useCanvasStore = create<CanvasStore>((set, get) => ({
         textBoxId: null
       },
       cursorPosition: textContent.length
+    });
+  },
+
+  selectWordAtPosition: (position: number) => {
+    const { textContent } = get();
+    const wordSelection = selectWordAt(position, textContent, null);
+    set({
+      selection: wordSelection,
+      cursorPosition: wordSelection.end
     });
   },
 
