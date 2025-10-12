@@ -26,7 +26,7 @@ export default function PixiCanvas() {
   useKeyboardInput(setCaretState);
   useMouseInput(canvasRef, textRef, setCaretState);
   useCanvasRenderer(appRef, textRef, caretState, caretChildIndexRef, selectionChildIndexRef);
-  useTextBoxSync(appRef); // TODO: Implement when multi-textbox feature is ready
+  useTextBoxSync(appRef); // Syncs text boxes with canvas state (multi-textbox feature pending)
 
   // Initialize PixiJS app
   useEffect(() => {
