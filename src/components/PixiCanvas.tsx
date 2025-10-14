@@ -12,7 +12,9 @@ import { useTextBoxSync } from "./hooks/useTextBoxSync";
 export default function PixiCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const appRef = useRef<Application | null>(null);
-  const textRef = useRef<Text | null>(null);
+
+  // Map of text box IDs to their PixiJS Text objects
+  const textObjectsRef = useRef<Map<string, Text>>(new Map());
 
   // Caret state and refs
   const [caretState, setCaretState] = useState(createCaretState());
@@ -24,9 +26,9 @@ export default function PixiCanvas() {
 
   // Custom hooks for input handling
   useKeyboardInput(setCaretState);
-  useMouseInput(canvasRef, textRef, setCaretState);
-  useCanvasRenderer(appRef, textRef, caretState, caretChildIndexRef, selectionChildIndexRef);
-  useTextBoxSync(appRef); // Syncs text boxes with canvas state (multi-textbox feature pending)
+  useMouseInput(canvasRef, textObjectsRef, setCaretState);
+  useCanvasRenderer(appRef, textObjectsRef, caretState, caretChildIndexRef, selectionChildIndexRef);
+  useTextBoxSync(appRef, textObjectsRef); // Syncs text boxes with canvas state
 
   // Initialize PixiJS app
   useEffect(() => {
@@ -52,18 +54,6 @@ export default function PixiCanvas() {
       });
 
       appRef.current = app;
-
-      // Create text object for rendering
-      const text = new Text({
-        text: "",
-        style: {
-          fontFamily: "monospace",
-          fontSize: 16,
-          fill: 0xffffff
-        }
-      });
-      app.stage.addChild(text);
-      textRef.current = text;
     };
 
     initPixi();
@@ -91,7 +81,7 @@ export default function PixiCanvas() {
   useEffect(() => {
     const interval = setInterval(() => {
       setCaretState((prev) => updateCaretBlink(prev, Date.now()));
-    }, 100); // Check every 100ms
+    }, 16); // Check every ~16ms (60fps)
 
     return () => clearInterval(interval);
   }, []);

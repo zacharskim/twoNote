@@ -2,21 +2,34 @@ import { useEffect, RefObject, Dispatch, SetStateAction } from "react";
 import { Text } from "pixi.js";
 import { handleMouseMove } from "@/canvas/input/mouse";
 import { getCursorPositionFromPoint } from "@/canvas/input/cursorPositioning";
-import { resetCaretBlink, type CaretState } from "@/canvas/rendering/caretRenderer";
+import {
+  resetCaretBlink,
+  type CaretState,
+} from "@/canvas/rendering/caretRenderer";
 import { useCanvasStore } from "@/canvas/state/store";
 import type { TextBox } from "@/types/canvas";
 
 /**
  * Helper: Check if a point is inside a text box
+ * Uses simple AABB (Axis-Aligned Bounding Box) collision detection
  */
 const isPointInTextBox = (x: number, y: number, box: TextBox): boolean => {
-  return x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height;
+  // Early exit optimizations - check most likely failures first
+  if (x < box.x) return false;
+  if (y < box.y) return false;
+  if (x > box.x + box.width) return false;
+  if (y > box.y + box.height) return false;
+  return true;
 };
 
 /**
  * Helper: Find which text box contains the click point
  */
-const findTextBoxAtPoint = (x: number, y: number, textBoxes: TextBox[]): TextBox | null => {
+const findTextBoxAtPoint = (
+  x: number,
+  y: number,
+  textBoxes: TextBox[],
+): TextBox | null => {
   // Check in reverse order (top to bottom in render order)
   for (let i = textBoxes.length - 1; i >= 0; i--) {
     if (isPointInTextBox(x, y, textBoxes[i])) {
@@ -30,9 +43,9 @@ const findTextBoxAtPoint = (x: number, y: number, textBoxes: TextBox[]): TextBox
  * Custom hook to handle all mouse input (move, click, double-click)
  */
 export const useMouseInput = (
-  canvasRef: RefObject<HTMLCanvasElement>,
-  textRef: RefObject<Text | null>,
-  setCaretState: Dispatch<SetStateAction<CaretState>>
+  canvasRef: RefObject<HTMLCanvasElement | null>,
+  textObjectsRef: RefObject<Map<string, Text>>,
+  setCaretState: Dispatch<SetStateAction<CaretState>>,
 ) => {
   const {
     setMousePosition,
@@ -43,7 +56,7 @@ export const useMouseInput = (
     addNewTextBox,
     textBoxes,
     editingId,
-    startEditing
+    startEditing,
   } = useCanvasStore();
 
   // Mouse move - track cursor position
@@ -80,6 +93,7 @@ export const useMouseInput = (
         setCaretState((prev) => resetCaretBlink(prev));
       } else {
         // Click on empty canvas - create new text box
+        console.log("we are here..");
         addNewTextBox(x, y);
         setCaretState((prev) => resetCaretBlink(prev));
       }
@@ -92,15 +106,27 @@ export const useMouseInput = (
   // Double click - select word
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const textObjectsMap = textObjectsRef.current;
+    if (!canvas || !textObjectsMap) return;
 
     const onDoubleClick = (event: MouseEvent) => {
       const { x, y } = handleMouseMove(event, canvas);
-      const text = textRef.current;
+
+      // Find which text box was clicked
+      const clickedBox = findTextBoxAtPoint(x, y, textBoxes);
+      if (!clickedBox) return;
+
+      // Get the Text object for this text box
+      const text = textObjectsMap.get(clickedBox.id);
       if (!text) return;
 
       // Calculate cursor position from click
-      const clickPosition = getCursorPositionFromPoint(text, x, y, textContent);
+      const clickPosition = getCursorPositionFromPoint(
+        text,
+        x,
+        y,
+        clickedBox.content,
+      );
 
       // Select word at that position
       selectWordAtPosition(clickPosition);
@@ -109,5 +135,11 @@ export const useMouseInput = (
 
     canvas.addEventListener("dblclick", onDoubleClick);
     return () => canvas.removeEventListener("dblclick", onDoubleClick);
-  }, [canvasRef, textRef, textContent, selectWordAtPosition, setCaretState]);
+  }, [
+    canvasRef,
+    textObjectsRef,
+    textBoxes,
+    selectWordAtPosition,
+    setCaretState,
+  ]);
 };

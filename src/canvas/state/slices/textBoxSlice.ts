@@ -7,7 +7,7 @@ import {
   replaceTextBox,
   removeTextBox,
   moveTextBox,
-  updateTextBoxContent
+  updateTextBoxContent,
 } from "@/canvas/entities/textBox";
 
 export interface TextBoxSlice {
@@ -26,7 +26,7 @@ export interface TextBoxSlice {
   mouseY: number;
 
   // Actions - Text Boxes
-  addNewTextBox: (x: number, y: number) => void;
+  addNewTextBox: (x: number, y: number) => TextBox;
   updateTextBox: (id: string, content: string) => void;
   moveTextBoxTo: (id: string, x: number, y: number) => void;
   deleteTextBox: (id: string) => void;
@@ -61,13 +61,19 @@ export const createTextBoxSlice: StateCreator<
   mouseY: 0,
 
   // Text box actions
-  addNewTextBox: (x: number, y: number) => {
-    const newBox = createTextBox(x, y, `box-${Date.now()}`);
+  addNewTextBox: (x: number, y: number): TextBox => {
+    // Offset Y position so cursor appears near click point (not below it)
+    // Text in PixiJS renders from top-left, so we offset upward by ~half font size
+    const FONT_SIZE = 16;
+    const adjustedY = y - FONT_SIZE / 2;
+
+    const newBox = createTextBox(x, adjustedY, `box-${Date.now()}`);
     set((state) => ({
       textBoxes: addTextBox(state.textBoxes, newBox),
       selectedId: newBox.id,
-      editingId: newBox.id
+      editingId: newBox.id,
     }));
+    return newBox;
   },
 
   updateTextBox: (id: string, content: string) => {
@@ -92,7 +98,7 @@ export const createTextBoxSlice: StateCreator<
     set((state) => ({
       textBoxes: removeTextBox(state.textBoxes, id),
       selectedId: null,
-      editingId: null
+      editingId: null,
     }));
   },
 
@@ -121,5 +127,5 @@ export const createTextBoxSlice: StateCreator<
 
   stopDragging: () => {
     set({ isDragging: false, dragOffsetX: 0, dragOffsetY: 0 });
-  }
+  },
 });

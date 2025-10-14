@@ -5,32 +5,40 @@ import { renderSelection } from "@/canvas/rendering/selectionRenderer";
 import { useCanvasStore } from "@/canvas/state/store";
 
 /**
- * Custom hook to handle canvas rendering (text, selection, caret)
+ * Custom hook to handle canvas rendering (caret and selection for active text box)
  */
 export const useCanvasRenderer = (
   appRef: RefObject<Application | null>,
-  textRef: RefObject<Text | null>,
+  textObjectsRef: RefObject<Map<string, Text>>,
   caretState: CaretState,
   caretChildIndexRef: RefObject<number | undefined>,
   selectionChildIndexRef: RefObject<number | undefined>
 ) => {
-  const { textContent, cursorPosition, selection } = useCanvasStore();
+  const { cursorPosition, selection, editingId, textBoxes } = useCanvasStore();
 
-  // Render text, selection, and caret
+  // Render caret and selection for the currently editing text box
   useEffect(() => {
-    const text = textRef.current;
     const app = appRef.current;
-    if (!text || !app) return;
+    const textObjectsMap = textObjectsRef.current;
+    if (!app || !textObjectsMap) return;
 
-    // Update text content
-    text.text = textContent || "";
+    // If no text box is being edited, don't render caret/selection
+    if (!editingId) return;
+
+    // Find the text box being edited
+    const textBox = textBoxes.find((box) => box.id === editingId);
+    if (!textBox) return;
+
+    // Get the Text object for this text box
+    const text = textObjectsMap.get(editingId);
+    if (!text) return;
 
     // Render selection highlight (single-line only)
     const newSelectionIndex = renderSelection(
       app.stage,
       text,
       selection,
-      textContent,
+      textBox.content,
       selectionChildIndexRef.current
     );
     selectionChildIndexRef.current = newSelectionIndex;
@@ -40,7 +48,7 @@ export const useCanvasRenderer = (
       app.stage,
       text,
       cursorPosition,
-      textContent,
+      textBox.content,
       caretState,
       caretChildIndexRef.current
     );
@@ -48,11 +56,12 @@ export const useCanvasRenderer = (
     caretChildIndexRef.current = newCaretIndex;
   }, [
     appRef,
-    textRef,
-    textContent,
+    textObjectsRef,
     cursorPosition,
     caretState,
     selection,
+    editingId,
+    textBoxes,
     caretChildIndexRef,
     selectionChildIndexRef
   ]);

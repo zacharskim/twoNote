@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(echo:*)",
+      "Read(//Users/mattzacharski/.config/helix/**)",
+      "Bash(cat:*)",
+      "Bash(pbcopy)"
     ],
     "deny": [],
     "ask": []
