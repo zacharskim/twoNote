@@ -93,7 +93,6 @@ export const useMouseInput = (
         setCaretState((prev) => resetCaretBlink(prev));
       } else {
         // Click on empty canvas - create new text box
-        console.log("we are here..");
         addNewTextBox(x, y);
         setCaretState((prev) => resetCaretBlink(prev));
       }

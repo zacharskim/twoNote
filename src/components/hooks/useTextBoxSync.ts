@@ -30,7 +30,6 @@ export const useTextBoxSync = (
     });
 
     // Add or update Text objects for each text box
-    console.log("hello, new text box ig..");
     textBoxes.forEach((textBox) => {
       let textObj = textObjectsMap.get(textBox.id);
 

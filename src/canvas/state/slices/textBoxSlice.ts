@@ -62,9 +62,8 @@ export const createTextBoxSlice: StateCreator<
 
   // Text box actions
   addNewTextBox: (x: number, y: number): TextBox => {
-    // Offset Y position so cursor appears near click point (not below it)
-    // Text in PixiJS renders from top-left, so we offset upward by ~half font size
-    const FONT_SIZE = 16;
+    //offset caret slightly
+    const FONT_SIZE = 16; //should be dynamic eventually
     const adjustedY = y - FONT_SIZE / 2;
 
     const newBox = createTextBox(x, adjustedY, `box-${Date.now()}`);
