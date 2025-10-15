@@ -80,6 +80,8 @@ export const useMouseInput = (
 
     const onMouseDown = (event: MouseEvent) => {
       const { x, y } = handleMouseMove(event, canvas);
+      const textObjectsMap = textObjectsRef.current;
+      if (!textObjectsMap) return;
 
       // Check if click is inside an existing text box
       const clickedBox = findTextBoxAtPoint(x, y, textBoxes);
@@ -88,8 +90,19 @@ export const useMouseInput = (
         // Click inside existing text box - start editing it
         startEditing(clickedBox.id);
 
-        // TODO: Position cursor within the text box based on click position
-        // For now, just start editing
+        // Get the Text object for this text box
+        const text = textObjectsMap.get(clickedBox.id);
+        if (text) {
+          // Calculate cursor position from click location
+          const clickPosition = getCursorPositionFromPoint(
+            text,
+            x,
+            y,
+            clickedBox.content,
+          );
+          setCursorPosition(clickPosition);
+        }
+
         setCaretState((prev) => resetCaretBlink(prev));
       } else {
         // Click on empty canvas - create new text box
@@ -100,7 +113,15 @@ export const useMouseInput = (
 
     canvas.addEventListener("mousedown", onMouseDown);
     return () => canvas.removeEventListener("mousedown", onMouseDown);
-  }, [canvasRef, textBoxes, addNewTextBox, startEditing, setCaretState]);
+  }, [
+    canvasRef,
+    textObjectsRef,
+    textBoxes,
+    addNewTextBox,
+    startEditing,
+    setCursorPosition,
+    setCaretState,
+  ]);
 
   // Double click - select word
   useEffect(() => {

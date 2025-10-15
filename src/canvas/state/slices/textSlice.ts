@@ -12,12 +12,9 @@ export interface TextSlice {
   clearText: () => void;
 }
 
-export const createTextSlice: StateCreator<
-  CanvasStore,
-  [],
-  [],
-  TextSlice
-> = (set) => ({
+export const createTextSlice: StateCreator<CanvasStore, [], [], TextSlice> = (
+  set,
+) => ({
   // Initial state
   textContent: "",
 
@@ -41,7 +38,8 @@ export const createTextSlice: StateCreator<
         const leftEdge = Math.min(state.selection.start, state.selection.end);
         const rightEdge = Math.max(state.selection.start, state.selection.end);
 
-        const newContent = content.slice(0, leftEdge) + char + content.slice(rightEdge);
+        const newContent =
+          content.slice(0, leftEdge) + char + content.slice(rightEdge);
         const updatedBox = { ...box, content: newContent };
         const updatedTextBoxes = [...textBoxes];
         updatedTextBoxes[boxIndex] = updatedBox;
@@ -50,12 +48,15 @@ export const createTextSlice: StateCreator<
           textBoxes: updatedTextBoxes,
           textContent: newContent, // Keep in sync for now
           cursorPosition: leftEdge + char.length,
-          selection: createSelection()
+          selection: createSelection(),
         };
       }
 
       // No selection - insert at cursor position
-      const newContent = content.slice(0, state.cursorPosition) + char + content.slice(state.cursorPosition);
+      const newContent =
+        content.slice(0, state.cursorPosition) +
+        char +
+        content.slice(state.cursorPosition);
       const updatedBox = { ...box, content: newContent };
       const updatedTextBoxes = [...textBoxes];
       updatedTextBoxes[boxIndex] = updatedBox;
@@ -63,7 +64,7 @@ export const createTextSlice: StateCreator<
       return {
         textBoxes: updatedTextBoxes,
         textContent: newContent, // Keep in sync for now
-        cursorPosition: state.cursorPosition + char.length
+        cursorPosition: state.cursorPosition + char.length,
       };
     });
   },
@@ -81,13 +82,15 @@ export const createTextSlice: StateCreator<
 
       const box = textBoxes[boxIndex];
       const content = box.content;
+      console.log("hello", content);
 
       // If there's a selection, delete the selection instead
       if (!isSelectionEmpty(state.selection)) {
         const leftEdge = Math.min(state.selection.start, state.selection.end);
         const rightEdge = Math.max(state.selection.start, state.selection.end);
 
-        const newContent = content.slice(0, leftEdge) + content.slice(rightEdge);
+        const newContent =
+          content.slice(0, leftEdge) + content.slice(rightEdge);
         const updatedBox = { ...box, content: newContent };
         const updatedTextBoxes = [...textBoxes];
         updatedTextBoxes[boxIndex] = updatedBox;
@@ -96,14 +99,16 @@ export const createTextSlice: StateCreator<
           textBoxes: updatedTextBoxes,
           textContent: newContent, // Keep in sync for now
           cursorPosition: leftEdge,
-          selection: createSelection()
+          selection: createSelection(),
         };
       }
 
       // Only delete if cursor is not at the beginning
       if (state.cursorPosition <= 0) return state;
 
-      const newContent = content.slice(0, state.cursorPosition - 1) + content.slice(state.cursorPosition);
+      const newContent =
+        content.slice(0, state.cursorPosition - 1) +
+        content.slice(state.cursorPosition);
       const updatedBox = { ...box, content: newContent };
       const updatedTextBoxes = [...textBoxes];
       updatedTextBoxes[boxIndex] = updatedBox;
@@ -111,12 +116,12 @@ export const createTextSlice: StateCreator<
       return {
         textBoxes: updatedTextBoxes,
         textContent: newContent, // Keep in sync for now
-        cursorPosition: state.cursorPosition - 1
+        cursorPosition: state.cursorPosition - 1,
       };
     });
   },
 
   clearText: () => {
     set({ textContent: "" });
-  }
+  },
 });
